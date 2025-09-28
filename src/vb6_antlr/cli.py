@@ -4,12 +4,27 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Sequence
+from typing import Iterable, Sequence
 
 from .config import ConverterConfig
-from .ir import IRBuilder
+from .ir import IRBuilder, IRModule
 from .parser import VB6ParserService
 from .serialization import JsonSerializer
+
+
+class FileOutputWriter:
+    """Writes IR modules to disk using the configured serializer."""
+
+    def __init__(self, serializer: JsonSerializer, output_dir: Path) -> None:
+        self._serializer = serializer
+        self._output_dir = output_dir
+
+    def write_all(self, modules: Iterable[IRModule]) -> bool:
+        try:
+            self._serializer.dump_many(modules, self._output_dir)
+        except OSError:
+            return False
+        return True
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -50,11 +65,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     serializer = JsonSerializer()
     if config.output_dir:
-        serializer.dump_many(modules, config.output_dir)
-    else:
-        for module in modules:
-            print(serializer.dumps(module))
+        writer = FileOutputWriter(serializer, config.output_dir)
+        success = writer.write_all(modules)
+        return 0 if success else 1
 
+    for module in modules:
+        print(serializer.dumps(module))
     return 0
 
 

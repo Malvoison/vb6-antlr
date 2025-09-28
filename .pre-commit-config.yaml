@@ -16,7 +16,10 @@ repos:
         args: ['--config-file=pyproject.toml']
         additional_dependencies:
           - types-setuptools
+          - antlr4-python3-runtime
         exclude: ^src/vb6_grammar/grammars/
+        additional_dependencies:
+          - antlr4-python3-runtime
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
