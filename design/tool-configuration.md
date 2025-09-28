@@ -47,6 +47,24 @@ pip install -U pip setuptools wheel
 pip install -r requirements.txt
 ```
 
+If `poetry install` reports that no `pyproject.toml` is present, initialize the project first:
+```bash
+poetry init --name vb6-antlr --description "VB6 parser to JSON converter" \
+  --license MIT --python '^3.11' --dependency antlr4-python3-runtime \
+  --dev-dependency pytest --no-interaction
+# or run `poetry init` with the interactive prompts
+```
+
+
+After initialization, ensure the package mapping matches your source layout:
+- Edit `pyproject.toml` so `[tool.poetry]` contains `packages = [{ include = "vb6_antlr", from = "src" }]` (use an underscore).
+- Create the package directory and an `__init__.py` placeholder:
+```bash
+mkdir -p src/vb6_antlr
+touch src/vb6_antlr/__init__.py
+```
+This prevents the "No file/folder found for package" error during `poetry install`.
+
 **Testing & linting stack** (to be added to `pyproject.toml`/`requirements-dev.txt`): `pytest`, `coverage`, `black`, `isort`, `ruff`, `mypy`.
 
 ## 3. ANTLR Toolchain
