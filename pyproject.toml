@@ -36,3 +36,7 @@ exclude = "(^|/)vb6_grammar/grammars"
 [[tool.mypy.overrides]]
 module = ["vb6_grammar.grammars", "vb6_grammar.grammars.*"]
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["antlr4", "antlr4.*"]
+ignore_missing_imports = true
