@@ -36,6 +36,7 @@ poetry init --name vb6-antlr --description "VB6 parser to JSON converter" \
   --dev-dependency pytest --no-interaction
 poetry install
 poetry run pre-commit install
+poetry run pre-commit run --all-files  # optional warm-up
 ```
 If you prefer the interactive wizard, run `poetry init` without flags. Export `requirements.txt` for non-Poetry users via `poetry export -f requirements.txt --output requirements.txt`.
 
@@ -47,12 +48,32 @@ touch src/vb6_antlr/__init__.py
 ```
 Ensure `[tool.poetry] packages` points to `vb6_antlr` (underscore) from `src/` before rerunning `poetry install`.
 
-### 3. Fetch ANTLR tooling
+### 3. Retrieve the VB6 grammar
+```bash
+git clone --depth=1 --filter=blob:none --sparse https://github.com/antlr/grammars-v4.git external/grammars-v4
+cd external/grammars-v4
+git sparse-checkout set vb6
+cd ..
+mkdir -p grammars
+cp external/grammars-v4/vb6/*.g4 grammars/
+```
+Alternatively, add grammars-v4 as a submodule to track upstream updates:
+```bash
+git submodule add --depth=1 https://github.com/antlr/grammars-v4.git external/grammars-v4
+git -C external/grammars-v4 sparse-checkout init --cone
+git -C external/grammars-v4 sparse-checkout set vb6
+mkdir -p grammars
+cp external/grammars-v4/vb6/*.g4 grammars/
+```
+Commit the copied `.g4` files and note the BSD-style license attribution.
+
+### 4. Fetch ANTLR tooling
 ```bash
 mkdir -p tools/antlr
 curl -L -o tools/antlr/antlr-4.13.1-complete.jar \
   https://www.antlr.org/download/antlr-4.13.1-complete.jar
 ```
+
 Add the helper aliases (append to `.bashrc`/`.zshrc`):
 ```bash
 export ANTLR4_JAR=$PWD/tools/antlr/antlr-4.13.1-complete.jar
@@ -60,10 +81,10 @@ alias antlr4='java -Xmx2G -jar "$ANTLR4_JAR"'
 alias grun='java org.antlr.v4.gui.TestRig'
 ```
 
-### 4. Generate the parser (after grammar sync)
+### 5. Generate the parser (after grammar sync)
 ```bash
 antlr4 -Dlanguage=Python3 -o src/vb6_grammar \
-  grammars/VB6.g4 grammars/VB6Lexer.g4
+  grammars/VisualBasic6Lexer.g4 grammars/VisualBasic6Parser.g4
 ```
 Capture these steps in a Makefile target (`make generate`) to streamline regeneration.
 
@@ -86,4 +107,3 @@ Refer to `design/high-level-design.md` for the full roadmap. Near-term focus:
 
 ## License
 Project license will be finalized during initialization (currently set to MIT in the `poetry init` template). Update the `LICENSE` file as needed.
-

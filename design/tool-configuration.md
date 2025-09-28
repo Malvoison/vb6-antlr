@@ -68,7 +68,26 @@ This prevents the "No file/folder found for package" error during `poetry instal
 **Testing & linting stack** (to be added to `pyproject.toml`/`requirements-dev.txt`): `pytest`, `coverage`, `black`, `isort`, `ruff`, `mypy`.
 
 ## 3. ANTLR Toolchain
-1. Download ANTLR tool JAR and place it under `tools/antlr/antlr-4.13.1-complete.jar` (location can be adjusted via Makefile/task runner).
+1. **Fetch the VB6 grammar** from the grammars-v4 repository:
+   - One-time download (sparse checkout):
+     ```bash
+     git clone --depth=1 --filter=blob:none --sparse https://github.com/antlr/grammars-v4.git external/grammars-v4
+     cd external/grammars-v4
+     git sparse-checkout set vb6
+     cd ..
+     mkdir -p grammars
+     cp external/grammars-v4/vb6/*.g4 grammars/
+     ```
+   - Or add as a submodule if you want to track upstream changes:
+     ```bash
+     git submodule add --depth=1 https://github.com/antlr/grammars-v4.git external/grammars-v4
+     git -C external/grammars-v4 sparse-checkout init --cone
+     git -C external/grammars-v4 sparse-checkout set vb6
+     mkdir -p grammars
+     cp external/grammars-v4/vb6/*.g4 grammars/
+     ```
+   - Remember to attribute grammars-v4 per its BSD license and keep the grammar files committed under `grammars/` for reproducibility.
+2. Download ANTLR tool JAR and place it under `tools/antlr/antlr-4.13.1-complete.jar` (location can be adjusted via Makefile/task runner).
 ```bash
 mkdir -p tools/antlr
 curl -L -o tools/antlr/antlr-4.13.1-complete.jar \
@@ -89,8 +108,9 @@ pip install antlr4-python3-runtime
 4. Grammar generation (example target, to be scripted via Makefile):
 ```bash
 antlr4 -Dlanguage=Python3 -o src/vb6_grammar \
-  grammars/VB6.g4 grammars/VB6Lexer.g4
+  grammars/VisualBasic6Lexer.g4 grammars/VisualBasic6Parser.g4
 ```
+Generated sources under `src/vb6_grammar/grammars/` are excluded from Ruff lint checks via `pyproject.toml` to suppress warnings from ANTLR-generated wildcard imports. The same directory is excluded from mypy (regex `(^|/)vb6_grammar/grammars`) and marked `ignore_errors` so type checking focuses on handwritten code.
 
 ## 4. Build & Task Automation
 - **Makefile**: capture commands for parser generation, formatting, linting, docs, and packaging:
@@ -106,7 +126,10 @@ antlr4 -Dlanguage=Python3 -o src/vb6_grammar \
 ```bash
 pipx install pre-commit
 pre-commit install
+pre-commit run --all-files  # optional, bootstrap the cache
 ```
+The default configuration lives in `.pre-commit-config.yaml`; tweak hook revisions or add project-specific checks as needed. Mypy hooks are pinned to `pyproject.toml` via `--config-file` so type-check exclusions apply consistently. The hook itself excludes `src/vb6_grammar/grammars/` to avoid touching generated artifacts.
+
 - **Logging & diagnostics**: plan to use `rich` or `loguru` for structured CLI output (add via Poetry once decided).
 
 ## 6. Containerization & CI (Optional, staged)
