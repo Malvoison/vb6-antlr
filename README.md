@@ -86,6 +86,8 @@ alias grun='java org.antlr.v4.gui.TestRig'
 antlr4 -Dlanguage=Python3 -o src/vb6_grammar \
   grammars/VisualBasic6Lexer.g4 grammars/VisualBasic6Parser.g4
 ```
+If ANTLR reports a missing `VisualBasic6Lexer.tokens`, rerun the lexer generation and copy the tokens file into `grammars/` (or invoke the parser step with `-lib src/vb6_grammar`).
+
 Capture these steps in a Makefile target (`make generate`) to streamline regeneration.
 
 ## Development Workflow

@@ -19,7 +19,7 @@ class JsonSerializer:
             "schemaVersion": module.body.get("schemaVersion", "1.0.0"),
             "source": str(module.source_path),
             "body": module.body,
-            "diagnostics": module.diagnostics,
+            "diagnostics": [d.to_dict() for d in module.diagnostics],
         }
         return json.dumps(payload, indent=indent)
 

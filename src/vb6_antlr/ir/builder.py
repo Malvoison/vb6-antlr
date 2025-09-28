@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from ..diagnostics import Diagnostic
 from ..parser import ParserOutput
 
 
@@ -15,7 +16,7 @@ class IRModule:
 
     source_path: Path
     body: dict[str, Any] = field(default_factory=dict)
-    diagnostics: list[str] = field(default_factory=list)
+    diagnostics: list[Diagnostic] = field(default_factory=list)
 
 
 class IRBuilder:

@@ -110,6 +110,7 @@ pip install antlr4-python3-runtime
 antlr4 -Dlanguage=Python3 -o src/vb6_grammar \
   grammars/VisualBasic6Lexer.g4 grammars/VisualBasic6Parser.g4
 ```
+If the parser step complains about missing `VisualBasic6Lexer.tokens`, rerun the lexer generation and copy the tokens file into `grammars/` (or pass `-lib src/vb6_grammar`) before re-running the parser grammar.
 Generated sources under `src/vb6_grammar/grammars/` are excluded from Ruff lint checks via `pyproject.toml` to suppress warnings from ANTLR-generated wildcard imports. The same directory is excluded from mypy (regex `(^|/)vb6_grammar/grammars`) and marked `ignore_errors` so type checking focuses on handwritten code.
 
 ## 4. Build & Task Automation
